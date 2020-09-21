@@ -12,12 +12,12 @@ class Parser
     $this->argv = $argv;
   }
 
-  public function checkError($valid, $message = 'Wrong equation')
+  public function checkError($valid, $message = 'Wrong equation', $messageParam = '')
   {
     if ($valid)
       return ;
 
-    echo $message . PHP_EOL;
+    echo $message . $messageParam . PHP_EOL;
     echo 'Usage: php main.php ["Equation"]' . PHP_EOL;
     exit;
   }
@@ -45,10 +45,25 @@ class Parser
     return $power;
   }
 
+  public function getByRegex($equation)
+  {
+    $result = [];
+    /* Get All +/- digit X^ digit */
+    $regex = "/((( *[+-]? *([0-9]*[.])?[0-9]+)? *(\*) *)?(X\^[0-9]+))/";
+    preg_match_all($regex, $equation, $result);
+    $result = current($result);
+    foreach ($result as $key => $value) {
+      $equation = str_replace($value, '', $equation);
+      // extrqct here
+    }
+    $this->checkError(str_replace(' ', '', $equation) == '', 'Error : ', sprintf('[%s]', $equation));
+    var_dump($result);
+  }
 
   public function getNumbers($equation, $reverseSign = false)
   {
     $sign = 1;
+    $this->getByRegex($equation);
     $expectedNumbers = preg_split( "/(\+|\-)/", $equation, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
 
     foreach ($expectedNumbers as $idx => $value) {
@@ -59,7 +74,7 @@ class Parser
         $sign = $reverseSign ? $sign * -1 : $sign;
         $part = explode('*', $value);
         $number = $this->getValue( trim($part[0]) );
-        $this->checkError( $this->isNumber($number), 'Wrong nmber');
+        $this->checkError( $this->isNumber($number), 'Wrong number', $value);
         $power = $this->getPower(trim($part[1]));
         $this->numbers[$power] += $number * $sign;
       }
