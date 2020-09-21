@@ -23,8 +23,9 @@ class Parser
   }
 
   public function getValue($val) {
+    $val = trim($val);
     if (is_numeric($val)) {
-      return $val + 0;
+      return $val + 0.0;
     }
     return null;
   }
@@ -38,6 +39,7 @@ class Parser
 
   public function getPower($value)
   {
+    $value = trim($value);
     $this->checkError( $value[0] == 'X' || $value[0] == 'x', 'Numbers must have X variable');
     $this->checkError( $value[1] == '^', 'Numbers must have X^');
     $power = $this->getValue(substr($value, 2));
@@ -45,7 +47,30 @@ class Parser
     return $power;
   }
 
-  public function getByRegex($equation)
+  public function getNumber($value)
+  {
+    $value = str_replace(' ', '', $value);
+    return $this->getValue($value);
+
+  }
+
+  public function extract($value, $reverse)
+  {
+    $sign = $reverse ? -1 : 1;
+    $value = trim($value);
+    if ($value[0] == 'X') {
+      $number = 1;
+      $power = $this->getPower($value);
+    } else {
+      $part = explode('*', $value);
+      $number = $this->getNumber($part[0]);
+      $power = $this->getPower($part[1]);
+    }
+
+    $this->numbers[$power] += $number * $sign;
+  }
+
+  public function getByRegex($equation, $reverse = false)
   {
     $result = [];
     /* Get All +/- digit X^ digit */
@@ -54,39 +79,19 @@ class Parser
     $result = current($result);
     foreach ($result as $key => $value) {
       $equation = str_replace($value, '', $equation);
-      // extrqct here
+      $this->extract($value, $reverse);
     }
-    $this->checkError(str_replace(' ', '', $equation) == '', 'Error : ', sprintf('[%s]', $equation));
+    $this->checkError(str_replace(' ', '', $equation) == '', 'Unknown element : ', sprintf('[%s]', trim($equation)));
     var_dump($result);
   }
 
-  public function getNumbers($equation, $reverseSign = false)
-  {
-    $sign = 1;
-    $this->getByRegex($equation);
-    $expectedNumbers = preg_split( "/(\+|\-)/", $equation, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
-
-    foreach ($expectedNumbers as $idx => $value) {
-      if ($value == '+' || $value == '-') {
-        $sign = $value == '+' ? 1 : -1;
-      }
-      else {
-        $sign = $reverseSign ? $sign * -1 : $sign;
-        $part = explode('*', $value);
-        $number = $this->getValue( trim($part[0]) );
-        $this->checkError( $this->isNumber($number), 'Wrong number', $value);
-        $power = $this->getPower(trim($part[1]));
-        $this->numbers[$power] += $number * $sign;
-      }
-    }
-  }
 
   public function parse()
   {
     $this->checkError(count($this->argv) == 2, 'Please enter one argument');
 
     $equations = explode('=', $this->argv[1]);
-    $this->getNumbers($equations[0]);
-    $this->getNumbers($equations[1], true);
+    $this->getByRegex($equations[0]);
+    $this->getByRegex($equations[1], true);
   }
 }
