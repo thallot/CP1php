@@ -26,6 +26,7 @@ class Computor
       if ($value != 0)
         $reduced .= sprintf(' %s %s * X^%s', $value > 0 && $key > 0 ? '+' : '', $value, $key);
     }
+    $reduced .= ' = 0';
 
     return $reduced . PHP_EOL;
   }

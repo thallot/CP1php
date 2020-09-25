@@ -73,7 +73,6 @@ class Parser
   public function getByRegex($equation, $reverse = false)
   {
     $result = [];
-    /* Get All +/- digit X^ digit */
     $regex = "/((( *[+-]? *([0-9]*[.])?[0-9]+)? *(\*) *)?(X\^[0-9]+))/";
     preg_match_all($regex, $equation, $result);
     $result = current($result);
@@ -82,7 +81,6 @@ class Parser
       $this->extract($value, $reverse);
     }
     $this->checkError(str_replace(' ', '', $equation) == '', 'Unknown element : ', sprintf('[%s]', trim($equation)));
-    var_dump($result);
   }
 
 
