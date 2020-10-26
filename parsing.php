@@ -67,7 +67,12 @@ class Parser
       $power = $this->getPower($part[1]);
     }
 
-    $this->numbers[$power] += $number * $sign;
+    if (isset($this->numbers[$power])) {
+        $this->numbers[$power] += $number * $sign;
+    } else {
+        $this->numbers[$power] = $number * $sign;
+    }
+
   }
 
   public function getByRegex($equation, $reverse = false)
