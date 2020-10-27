@@ -33,7 +33,7 @@ class Computor
     public function getMaxDegree()
     {
         if (!isset($this->maxDegree)) {
-            $this->maxDegree = count($this->numbers) - 1;
+            $this->maxDegree = max(array_keys($this->numbers));
         }
         return $this->maxDegree;
     }
@@ -44,6 +44,7 @@ class Computor
             echo "Not a valid equation";
             exit();
         }
+
         echo $this->getReducedForm();
         echo 'Polynomial degree: ' . $this->getMaxDegree() . PHP_EOL;
 
